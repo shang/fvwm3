@@ -320,6 +320,9 @@ const func_t func_table[] =
 	CMD_ENT("infostoreclear", CMD_InfoStoreClear, F_INFOSTORECLEAR, 0, 0),
 	/* - Clears all entries from the infostore */
 
+	CMD_ENT("infostoreread", CMD_InfoStoreRead, F_INFOSTOREREAD, 0, 0),
+	/* - Read an entry to the infostore */
+
 	CMD_ENT("infostoreremove", CMD_InfoStoreRemove, F_INFOSTOREREMOVE, 0, 0),
 	/* - Removes an entry from the infostore */
 

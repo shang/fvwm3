@@ -22,9 +22,12 @@
 #include "libs/FGettext.h"
 #include "libs/Parse.h"
 #include "libs/Strings.h"
+#include "libs/fvwmsignal.h"
 #include "infostore.h"
 #include "misc.h"
 #include "functions.h"
+#include "events.h"
+#include "focus.h"
 
 /* ---------------------------- local definitions -------------------------- */
 
@@ -193,6 +196,76 @@ void CMD_InfoStoreAdd(F_CMD_ARGS)
 
 	insert_metainfo(key, value);
 	free(value);
+
+	return;
+}
+
+void CMD_InfoStoreRead(F_CMD_ARGS)
+{
+	char *key, *value;
+	char *token;
+	char *input;
+
+	token = PeekToken(action, &action);
+
+	if (!token)
+	{
+		fvwm_debug(__func__, "No key given to read keypress.");
+		return;
+	}
+
+	// grab next key event if has input focused window
+	FvwmWindow *focused = get_focus_window();
+
+	Bool done = False;
+	unsigned int keycode = 0;
+	while (!done && !isTerminated)
+	{
+		XEvent e;
+		if (My_XNextEvent(dpy, &e))
+		{
+			if (e.type == KeyPress)
+			{
+				keycode = e.xkey.keycode;
+				KeySym ks = fvwm_KeycodeToKeysym(dpy, e.xkey.keycode, 0, 0);
+				input = XKeysymToString(ks);
+				if (input != NULL) {
+					key = strdup(token);
+					value = fxstrdup(input);
+					insert_metainfo(key, value);
+					free(value);
+				}
+				XAllowEvents(dpy, AsyncKeyboard, CurrentTime);
+			}
+			else if (e.type == KeyRelease)
+			{
+				char *s = XKeysymToString(fvwm_KeycodeToKeysym(dpy, e.xkey.keycode, 0, 0));
+				XAllowEvents(dpy, AsyncKeyboard, CurrentTime);
+				if (e.xkey.keycode == keycode)
+				{
+					done = True;
+					if (focused != NULL)
+						XUngrabKey(dpy, AnyKey, AnyModifier, FW_W_FRAME(focused));
+				}
+				else if (focused != NULL)
+				{
+					// this should be the release of key-binding that summoned InfoStoreRead, we
+					// grab key again after the previous grabbing is terminated automatically when
+					// the specified key released
+					int r = XGrabKey(dpy, AnyKey, AnyModifier, FW_W_FRAME(focused), True, GrabModeAsync, GrabModeAsync);
+					if (r > 1)
+					{
+						fvwm_debug(__func__, "Error when grab key: %d", r);
+						return;
+					}
+				}
+			}
+			else
+			{
+				dispatch_event(&e);
+			}
+		}
+	}
 
 	return;
 }

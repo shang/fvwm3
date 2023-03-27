@@ -80,6 +80,7 @@ enum
 	F_IGNORE_MODIFIERS,
 	F_IMAGE_PATH,
 	F_INFOSTOREADD,
+	F_INFOSTOREREAD,
 	F_INFOSTOREREMOVE,
 	F_INFOSTORECLEAR,
 	F_KEEPRC,
@@ -278,6 +279,7 @@ void CMD_IconPath(F_CMD_ARGS);
 void CMD_IgnoreModifiers(F_CMD_ARGS);
 void CMD_ImagePath(F_CMD_ARGS);
 void CMD_InfoStoreAdd(F_CMD_ARGS);
+void CMD_InfoStoreRead(F_CMD_ARGS);
 void CMD_InfoStoreClear(F_CMD_ARGS);
 void CMD_InfoStoreRemove(F_CMD_ARGS);
 void CMD_KeepRc(F_CMD_ARGS);
